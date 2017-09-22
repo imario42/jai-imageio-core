@@ -92,18 +92,10 @@ public class PNMImageWriter extends ImageWriter {
     private static final String COMMENT =
         "# written by com.github.jaiimageio.impl.PNMImageWriter";
 
-    private static byte[] lineSeparator;
+    private final static byte[] lineSeparator = System.lineSeparator().getBytes();
 
     private int variant;
     private int maxValue;
-
-    static {
-        if (lineSeparator == null) {
-            String ls = (String)java.security.AccessController.doPrivileged(
-               new sun.security.action.GetPropertyAction("line.separator"));
-            lineSeparator = ls.getBytes();
-        }
-    }
 
     /** The output stream to write into */
     private ImageOutputStream stream = null;

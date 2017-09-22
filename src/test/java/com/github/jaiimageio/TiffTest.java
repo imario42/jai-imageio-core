@@ -16,12 +16,15 @@ import javax.imageio.ImageWriter;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.stream.ImageOutputStream;
 
+import com.github.jaiimageio.impl.common.ImageUtil;
 import com.github.jaiimageio.impl.plugins.tiff.TIFFImageReader;
 import com.github.jaiimageio.impl.plugins.tiff.TIFFImageWriter;
 import com.github.jaiimageio.impl.plugins.tiff.TIFFT6Compressor;
 import com.github.jaiimageio.plugins.tiff.TIFFImageReadParam;
 import com.github.jaiimageio.plugins.tiff.TIFFImageWriteParam;
 import org.junit.Test;
+
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class TiffTest {
@@ -46,8 +49,9 @@ public class TiffTest {
 			}
 		}
 		Iterator<ImageWriter> writers = ImageIO.getImageWritersBySuffix("tiff");
-        assertTrue(writers.hasNext());
-        TIFFImageWriter tiffImageWriter = (TIFFImageWriter)writers.next();
+		TIFFImageWriter tiffImageWriter = ImageUtil.findWriter(TIFFImageWriter.class, writers);
+        assertNotNull(tiffImageWriter);
+
         //----
 		TIFFImageWriteParam writeParams = (TIFFImageWriteParam)tiffImageWriter.getDefaultWriteParam();
         TIFFT6Compressor compressor = new TIFFT6Compressor();

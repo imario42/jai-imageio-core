@@ -89,8 +89,8 @@ public class WBMPImageReaderSpi extends ImageReaderSpi {
             return;
         }
         registered = true;
-	
-	// By JDK 1.7, the WBMPImageReader will have been in JDK core for 
+
+	// By JDK 1.7, the WBMPImageReader will have been in JDK core for
 	// atleast two FCS releases, so we can set JIIO's to lower priority
 	// With JDK 1.8, we can entirely de-register the JIIO one
 	ImageUtil.processOnRegistration(registry, category, "WBMP", this,

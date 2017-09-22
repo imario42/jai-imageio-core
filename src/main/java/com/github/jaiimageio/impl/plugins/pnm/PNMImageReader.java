@@ -85,17 +85,6 @@ public class PNMImageReader extends ImageReader {
     private static final int PGM_RAW    = '5';
     private static final int PPM_RAW    = '6';
 
-    private static final int LINE_FEED = 0x0A;
-    private static byte[] lineSeparator;
-
-    static {
-        if (lineSeparator == null) {
-            String ls = (String)java.security.AccessController.doPrivileged(
-               new sun.security.action.GetPropertyAction("line.separator"));
-            lineSeparator = ls.getBytes();
-        }
-    }
-
     /** File variant: PBM/PGM/PPM, ASCII/RAW. */
     private int variant;
 

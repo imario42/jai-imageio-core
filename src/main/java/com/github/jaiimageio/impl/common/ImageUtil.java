@@ -1380,34 +1380,53 @@ public class ImageUtil {
 					     Class category,
 					     String formatName,
 					     ImageReaderWriterSpi spi,
-					     int deregisterJvmVersion, 
+					     int deregisterJvmVersion,
 					     int priorityJvmVersion) {
 
 	// Check which JVM we are running on
 	String jvmVendor = System.getProperty("java.vendor");
-	String jvmVersionString = 
+	String jvmVersionString =
 	    System.getProperty("java.specification.version");
-	int verIndex = jvmVersionString.indexOf("1.");
-	// Skip the "1." part to get to the part of the version number that
-	// actually changes from version to version
-	// The assumption here is that "java.specification.version" is 
-	// always of the format "x.y" and not "x.y.z" since that is what has
-	// been practically observed in all JDKs to-date, an examination of
-	// the code returning this property bears this out. However this does
-	// not guarantee that the format won't change in the future, 
-	// though that seems unlikely.
-	jvmVersionString = jvmVersionString.substring(verIndex+2);
-	
-	int jvmVersion = Integer.parseInt(jvmVersionString);
-	
-	if (jvmVendor.equals("Sun Microsystems Inc.")) {
-	    
+
+	// strip everything after and including "-". Might be something like 9-ea
+    int verIndex = jvmVersionString.indexOf("-");
+    if (verIndex > -1) {
+        jvmVersionString = jvmVersionString.substring(0, verIndex);
+    }
+
+	// check vor pre Java 9 version convention.
+	if (jvmVersionString.startsWith("1."))
+    {
+        verIndex = jvmVersionString.indexOf("1.");
+        // Skip the "1." part to get to the part of the version number that
+        // actually changes from version to version
+        // The assumption here is that "java.specification.version" is
+        // always of the format "x.y" and not "x.y.z" since that is what has
+        // been practically observed in all JDKs to-date, an examination of
+        // the code returning this property bears this out. However this does
+        // not guarantee that the format won't change in the future,
+        // though that seems unlikely.
+        jvmVersionString = jvmVersionString.substring(verIndex + 2);
+    }
+    else
+    {
+        // version string is not starting with "1.", so seems to be a modern version string.
+        verIndex = jvmVersionString.indexOf(".");
+        if (verIndex > -1) {
+            jvmVersionString = jvmVersionString.substring(0, verIndex);
+        }
+    }
+
+    int jvmVersion = Integer.parseInt(jvmVersionString);
+
+	if (jvmVendor.equals("Sun Microsystems Inc.") || jvmVendor.equals("Oracle Corporation")) {
+
 	    List list;
 	    if (spi instanceof ImageReaderSpi)
 		list = getJDKImageReaderWriterSPI(registry, formatName, true);
-	    else 
+	    else
 		list = getJDKImageReaderWriterSPI(registry, formatName, false);
-	    
+
 	    if (jvmVersion >= deregisterJvmVersion && list.size() != 0) {
 		// De-register JIIO's plug-in
 		registry.deregisterServiceProvider(spi, category);
@@ -1415,7 +1434,7 @@ public class ImageUtil {
 		for (int i=0; i<list.size(); i++) {
 		    if (jvmVersion >= priorityJvmVersion) {
 			// Set JIIO plug-in to lower priority
-			registry.setOrdering(category, 
+			registry.setOrdering(category,
 					     list.get(i),
 					     spi);
 		    } else {
@@ -1438,5 +1457,19 @@ public class ImageUtil {
             result |= (value & 0x7f);
         }
         return result;
+    }
+
+    public static <E extends ImageWriter> E findWriter(Class<E> requestedImageWriter, Iterator<ImageWriter> writers)
+    {
+        while (writers.hasNext())  {
+            ImageWriter imageWriter = writers.next();
+            if (imageWriter != null
+                && imageWriter.getClass().isAssignableFrom(requestedImageWriter))
+            {
+                return requestedImageWriter.cast(imageWriter);
+            }
+        }
+
+        return null;
     }
 }
